@@ -1,0 +1,8 @@
+Contact: mailto:security@sentinelkey.org
+Encryption: https://sentinelkey.org/pgp-key.txt
+Acknowledgments: https://sentinelkey.org/hall-of-fame
+Preferred-Languages: en, es, fr, de, ja, zh
+Canonical: https://sentinelkey.org/.well-known/security.txt
+Policy: https://github.com/sentinelkey/sentinelkey/blob/main/SECURITY.md
+Hiring: https://sentinelkey.org/careers
+Expires: 2027-12-31T23:59:59.000Z

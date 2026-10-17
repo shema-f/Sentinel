@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  sentinelkey-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://sentinel_app:db_password_here@postgres:5432/sentinelkey_prod?sslmode=require
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sentinel_app
+      POSTGRES_PASSWORD: db_password_here
+      POSTGRES_DB: sentinelkey_prod
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass redis_password_here
+    ports:
+      - "127.0.0.1:6379:6379"
+    restart: unless-stopped
+
+volumes:
+  pgdata:

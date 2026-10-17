@@ -1,0 +1,6 @@
+{
+  "name": "SentinelKey",
+  "description": "Privacy-first browser credential exposure and digital identity security platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
