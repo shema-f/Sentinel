@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { AnonymizedBreachLocation } from '../types';
 import { ANONYMIZED_BREACH_LOCATIONS, MAP_REGION_PRESETS } from '../lib/worldGeoData';
+import { createEarthMapCanvas } from '../lib/earthMapTexture';
 
 interface ThreatGlobe3DProps {
   breaches?: AnonymizedBreachLocation[];
@@ -72,77 +73,12 @@ export const ThreatGlobe3D: React.FC<ThreatGlobe3DProps> = ({
   const targetDistanceRef = useRef<number>(240);
   const currentDistanceRef = useRef<number>(240);
 
-  // Generate procedural textures for continent landmasses & cyber grid (Zero external asset dependency)
+  // Real Natural Earth world map texture + procedural glow sprite
+  // (Real vector geometry bundled locally — zero external asset fetch at runtime)
   const textures = useMemo(() => {
-    // 1. Cyber Continent Map Texture
-    const mapCanvas = document.createElement('canvas');
-    mapCanvas.width = 2048;
-    mapCanvas.height = 1024;
-    const ctx = mapCanvas.getContext('2d');
-    if (ctx) {
-      // Dark oceanic background
-      ctx.fillStyle = '#050a14';
-      ctx.fillRect(0, 0, 2048, 1024);
-
-      // Procedural stylized continent dot-matrix / polygons
-      ctx.fillStyle = 'rgba(0, 240, 168, 0.18)';
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-      ctx.lineWidth = 1;
-
-      // Approximate continent masses with procedural clusters for cybernetic earth look
-      const drawContinentBlob = (cx: number, cy: number, rx: number, ry: number) => {
-        ctx.beginPath();
-        for (let a = 0; a < Math.PI * 2; a += 0.1) {
-          const r = 1 + Math.sin(a * 5) * 0.18 + Math.cos(a * 3) * 0.12;
-          const px = cx + Math.cos(a) * rx * r;
-          const py = cy + Math.sin(a) * ry * r;
-          if (a === 0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-      };
-
-      // North America
-      drawContinentBlob(500, 320, 280, 180);
-      // South America
-      drawContinentBlob(700, 680, 160, 240);
-      // Europe
-      drawContinentBlob(1080, 310, 170, 120);
-      // Africa
-      drawContinentBlob(1120, 560, 190, 220);
-      // Asia
-      drawContinentBlob(1500, 340, 340, 200);
-      // Australia
-      drawContinentBlob(1720, 720, 160, 130);
-
-      // Fine holographic latitude/longitude tech grid
-      ctx.strokeStyle = 'rgba(30, 48, 77, 0.45)';
-      ctx.lineWidth = 0.8;
-      for (let x = 0; x < 2048; x += 128) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, 1024);
-        ctx.stroke();
-      }
-      for (let y = 0; y < 1024; y += 64) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(2048, y);
-        ctx.stroke();
-      }
-
-      // Digital coordinate nodes
-      ctx.fillStyle = 'rgba(0, 240, 168, 0.6)';
-      for (let x = 64; x < 2048; x += 256) {
-        for (let y = 64; y < 1024; y += 128) {
-          ctx.beginPath();
-          ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-    }
+    // 1. Real equirectangular Earth map (Natural Earth 1:110m coastlines,
+    //    borders and graticule drawn by src/lib/earthMapTexture.ts)
+    const mapCanvas = createEarthMapCanvas(2048, 1024);
 
     const earthTexture = new THREE.CanvasTexture(mapCanvas);
     earthTexture.wrapS = THREE.RepeatWrapping;
@@ -238,9 +174,9 @@ export const ThreatGlobe3D: React.FC<ThreatGlobe3DProps> = ({
         map: textures.earthTexture,
         roughness: 0.6,
         metalness: 0.35,
-        color: 0x0f172a,
+        color: 0xffffff,
         emissive: 0x051329,
-        emissiveIntensity: 0.4,
+        emissiveIntensity: 0.35,
       });
     } else if (activeTheme === 'matrix') {
       earthMaterial = new THREE.MeshBasicMaterial({
@@ -253,8 +189,9 @@ export const ThreatGlobe3D: React.FC<ThreatGlobe3DProps> = ({
       // Heatmap Theme
       earthMaterial = new THREE.MeshStandardMaterial({
         map: textures.earthTexture,
-        color: 0x1a0b16,
+        color: 0xff7a8c,
         emissive: 0x2b0f20,
+        emissiveIntensity: 0.4,
         roughness: 0.8,
       });
     }
